@@ -1,0 +1,48 @@
+name: Deploy Canvas Changes to GitHub
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: "*/10 * * * *" # Runs every 10 minutes to check for missed updates
+
+jobs:
+  sync_canvas:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "actions@github.com"
+
+      - name: Pull Latest Changes
+        run: git pull origin main --no-edit || true
+
+      - name: Detect Canvas Updates
+        id: check_changes
+        run: |
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No new changes detected."
+            exit 0
+          else
+            echo "Changes detected, proceeding with commit."
+          fi
+
+      - name: Commit and Push Changes
+        if: success()
+        run: |
+          git add .
+          git commit -m "Auto-sync from Canvas"
+          git push origin main
+
+      - name: Notify Netlify Deployment
+        run: |
+          curl -X POST -d {} "https://api.netlify.com/build_hooks/YOUR_NETLIFY_BUILD_HOOK"
