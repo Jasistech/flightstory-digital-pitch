@@ -1,0 +1,49 @@
+name: Deploy Canvas Changes to GitHub
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sync_canvas:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "actions@github.com"
+
+      - name: Pull Latest Changes
+        run: |
+          git pull origin main || true
+
+      - name: Check for Changes
+        id: check_changes
+        run: |
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No new changes detected."
+            echo "has_changes=false" >> $GITHUB_ENV
+          else
+            echo "Changes detected, proceeding with commit."
+            echo "has_changes=true" >> $GITHUB_ENV
+          fi
+
+      - name: Commit and Push Changes
+        if: env.has_changes == 'true'
+        run: |
+          git add .
+          git commit -m "Auto-sync from Canvas"
+          git push origin main
+
+      - name: Notify Netlify Deployment
+        if: env.has_changes == 'true'
+        run: |
+          curl -X POST -d {} "https://api.netlify.com/build_hooks/67aa6d789b7670379743e8dc"
