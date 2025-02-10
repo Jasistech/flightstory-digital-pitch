@@ -5,6 +5,8 @@ on:
     branches:
       - main
   workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *" # Runs every hour in case of missed triggers
 
 jobs:
   sync_canvas:
