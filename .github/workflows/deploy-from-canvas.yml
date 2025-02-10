@@ -25,10 +25,11 @@ jobs:
         run: |
           git pull origin main || true
 
-      - name: Check for Changes
+      - name: Detect Changes
         id: check_changes
         run: |
-          if [[ -z "$(git status --porcelain)" ]]; then
+          CHANGES=$(git status --porcelain)
+          if [[ -z "$CHANGES" ]]; then
             echo "No new changes detected."
             echo "has_changes=false" >> $GITHUB_ENV
           else
@@ -36,14 +37,19 @@ jobs:
             echo "has_changes=true" >> $GITHUB_ENV
           fi
 
+      - name: Force File Change (Prevents No-Change Issues)
+        run: |
+          echo "Updated on $(date)" >> force-change.txt
+          git add force-change.txt
+
       - name: Commit and Push Changes
         if: env.has_changes == 'true'
         run: |
           git add .
-          git commit -m "Auto-sync from Canvas"
+          git commit -m "Auto-sync from Canvas - Force Update"
           git push origin main
 
       - name: Notify Netlify Deployment
         if: env.has_changes == 'true'
         run: |
-          curl -X POST -d {} "https://api.netlify.com/build_hooks/67aa6d789b7670379743e8dc"
+          curl -X POST -d {} "https://api.netlify.com/build_hooks/YOUR_NETLIFY_BUILD_HOOK"
