@@ -23,33 +23,19 @@ jobs:
 
       - name: Pull Latest Changes
         run: |
-          git pull origin main || true
+          git pull origin main --no-edit || true
 
-      - name: Detect Changes
-        id: check_changes
-        run: |
-          CHANGES=$(git status --porcelain)
-          if [[ -z "$CHANGES" ]]; then
-            echo "No new changes detected."
-            echo "has_changes=false" >> $GITHUB_ENV
-          else
-            echo "Changes detected, proceeding with commit."
-            echo "has_changes=true" >> $GITHUB_ENV
-          fi
-
-      - name: Force File Change (Prevents No-Change Issues)
+      - name: Force a File Change (Ensures GitHub Detects an Update)
         run: |
           echo "Updated on $(date)" >> force-change.txt
           git add force-change.txt
 
       - name: Commit and Push Changes
-        if: env.has_changes == 'true'
         run: |
           git add .
-          git commit -m "Auto-sync from Canvas - Force Update"
+          git commit -m "Auto-sync from Canvas - Forced Update"
           git push origin main
 
       - name: Notify Netlify Deployment
-        if: env.has_changes == 'true'
         run: |
           curl -X POST -d {} "https://api.netlify.com/build_hooks/YOUR_NETLIFY_BUILD_HOOK"
