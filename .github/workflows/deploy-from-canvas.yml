@@ -38,4 +38,4 @@ jobs:
 
       - name: Notify Netlify Deployment
         run: |
-          curl -X POST -d {} "https://api.netlify.com/build_hooks/YOUR_NETLIFY_BUILD_HOOK"
+          curl -X POST -d {} "https://api.netlify.com/build_hooks/67aa6d789b7670379743e8dc"
