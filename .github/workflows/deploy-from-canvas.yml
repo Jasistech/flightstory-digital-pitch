@@ -24,7 +24,7 @@ jobs:
       - name: Pull Canvas Changes and Push to GitHub
         run: |
           git pull origin main || true
-          if [[ -n $(git status --porcelain) ]]; then
+          if [[ -n "$(git status --porcelain)" ]]; then
             git add .
             git commit -m "Auto-sync from Canvas"
             git push origin main
